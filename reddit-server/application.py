@@ -69,6 +69,19 @@ class RedditAuthorize(Handler):
         #Get username using code
         headers = {'user-agent': 'reddit command line interface', 'Authorization': 'bearer ' + code}
         r = requests.get('http://www.reddit.com/api/v1/me', headers=headers)
+        username = r.text
+
+        query = db.GqlQuery(
+            "select * from User where username=:1 limit 1", username)
+        user = query.get()
+
+        #If user exists
+        if user:
+            if user.hash_key: #If hash key exists
+                user.code = access_token
+                user.put()
+        else:
+            pass
 
         #member = User()
         #member.hash_key = self.hash_str(code)

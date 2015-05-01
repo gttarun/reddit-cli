@@ -13,7 +13,6 @@ import requests
 
 from google.appengine.ext import db
 
-package = 'Hello'
 SECRET = 'fd340294sdkf9043ls'
 
 CLIENT_ID = 'Ssu0fl-xIUrgYA'
