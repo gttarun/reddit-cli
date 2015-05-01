@@ -1,0 +1,22 @@
+application: green-torus-802
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+libraries:
+- name: jinja2
+  version: latest
+
+- name: endpoints
+  version: latest
+
+handlers:
+- url: /assets
+  static_dir: assets
+
+- url: /_ah/spi/.*
+  script: reddit_api.APPLICATION
+
+- url: /.*
+  script: application.app
