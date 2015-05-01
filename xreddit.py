@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import requests
 from bs4 import BeautifulSoup
 
@@ -18,9 +16,9 @@ def get_posts():
     # extract just the title of the post and its link
     pre_posts = [post.find('p', attrs={'class' : 'title'}) for post in parsed(attrs={'class': 'thing'})]
     posts = [[post.find('a').get('href'), post.get_text()] for post in pre_posts]
-
+    
     return posts # a list of posts with title and links
- 
+
 def main():
     posts = get_posts()
 
