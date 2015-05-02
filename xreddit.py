@@ -23,7 +23,7 @@ def main():
     posts = get_posts()
 
     for post in posts:
-        print post, '\n'
+        print post, ' \n'
 
     return
 
