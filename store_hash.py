@@ -6,7 +6,6 @@ def store_hash(hash_code=''):
 		hash_file = open(w_directory + "hash.txt", "a")
 		hash_file.write(hash_code)
 		hash_file.close()
-		print "Done"
 	return
 
-store_hash("hjdsHsjh787823JUhjsjhdsj89923j")
+store_hash("hash")
