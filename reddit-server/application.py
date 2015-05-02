@@ -25,7 +25,7 @@ jinja_env = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(
 CLIENT_ID = 'Ssu0fl-xIUrgYA'
 CLIENT_SECRET = 'fUN46jr4FKuBr_GM1xEu8pDZcsw'
 #REDIRECT_URI = 'http://green-torus-802.appspot.com/authorize_callback'
-REDIRECT_URI = 'http://localhost:8080/authorize_callback'
+REDIRECT_URI = 'https://green-torus-802.appspot.com/authorize_callback'
 
 class User(db.Model):
     hash_key = db.StringProperty()
