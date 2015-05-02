@@ -17,7 +17,51 @@ SECRET = 'fd340294sdkf9043ls'
 
 CLIENT_ID = 'Ssu0fl-xIUrgYA'
 CLIENT_SECRET = 'fUN46jr4FKuBr_GM1xEu8pDZcsw'
-REDIRECT_URI = 'http://localhost:8080/authorize_callback'
+REDIRECT_URI = 'http://green-torus-802.appspot.com/authorize_callback'
+
+'''
+Add two columns
+    Old hash and old code
+
+Scenarios:
+
+1st timer:
+    Sends over username, returns URL + hash_key
+    Clicks URL, redirected to Reddit
+
+    On success:
+        Server stores code as username:code
+    On fail:
+        Server does nothing
+
+Lost hash.txt:
+    Checks hash.txt file
+
+    Sends over username, web server sees already exist
+        Deletes, old hash, disables code
+        returns URL + hash_key
+        Clicks URL, redirected to Reddit
+
+        On success:
+            Server stores code as username:code
+        On fail:
+            Server does nothing
+
+Using someone elses username:
+    Text file exists:
+        Sends ur hash, with someone elses username:
+            returns error
+
+    Text file doesnt exist:
+        Sends over username, returns URL + hash_key
+
+        Clicks URL, redirected to Reddit
+
+        On success:
+            Server stores code as username:code
+        On fail:
+            Server does nothing
+'''
 
 class User(db.Model):
     hash_key = db.StringProperty()
@@ -71,7 +115,7 @@ class RedditApi(remote.Service):
             user.code = "none"
             user.put()
 
-            return Code(hash_key=new_hash, url=r.get_authorize_url('UniqueKey'))
+            return Code(hash_key=new_hash, url=r.get_authorize_url('UniqueKey', refreshable=True))
         else:
             query = db.GqlQuery(
                 "select * from User where username=:1 limit 1", request.username)

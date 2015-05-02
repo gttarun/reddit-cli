@@ -23,7 +23,7 @@ jinja_env = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(
 
 CLIENT_ID = 'Ssu0fl-xIUrgYA'
 CLIENT_SECRET = 'fUN46jr4FKuBr_GM1xEu8pDZcsw'
-REDIRECT_URI = 'http://localhost:8080/authorize_callback'
+REDIRECT_URI = 'http://green-torus-802.appspot.com/authorize_callback'
 
 class User(db.Model):
     hash_key = db.StringProperty()
@@ -61,15 +61,17 @@ class RedditAuthorize(Handler):
         
         code = self.request.get('code')
 
-        #Retrieve access token using code
-        payload = {'grant_type': 'authorization_code', 'code': code, 'redirect_uri': REDIRECT_URI}
-        r = requests.post("https://www.reddit.com/api/v1/access_token", data=payload)
-        access_token = r.text
+        # Retrieve access token using code
+        # payload = {'grant_type': 'authorization_code', 'code': code, 'redirect_uri': REDIRECT_URI}
+        # r = requests.post("https://www.reddit.com/api/v1/access_token", data=payload)
+        # access_token = r.text
 
-        #Get username using code
-        headers = {'user-agent': 'reddit command line interface', 'Authorization': 'bearer ' + code}
-        r = requests.get('http://www.reddit.com/api/v1/me', headers=headers)
-        username = r.text
+        # Get username using code
+        # headers = {'user-agent': 'reddit command line interface', 'Authorization': 'bearer ' + code}
+        # r = requests.get('http://www.reddit.com/api/v1/me', headers=headers)
+        # username = r.text
+
+        username = 'tabchas'
 
         query = db.GqlQuery(
             "select * from User where username=:1 limit 1", username)
@@ -78,7 +80,7 @@ class RedditAuthorize(Handler):
         #If user exists
         if user:
             if user.hash_key: #If hash key exists
-                user.code = access_token
+                user.code = code
                 user.put()
         else:
             pass
