@@ -1,4 +1,4 @@
-import requests, cmd
+import requests, cmd, os
 from bs4 import BeautifulSoup
 
 set_posts = []
@@ -28,6 +28,14 @@ def get_posts(subreddit='', previous=False, next=False, hot=''):
     
     return posts # a list of posts with title and links
 
+def store_hash(hash_code=''):
+    if hash_code:
+        w_directory = os.getcwd()
+        hash_file = open(w_directory + "hash.txt", "a")
+        hash_file.write(hash_code)
+        hash_file.close()
+    return
+
 class HelloWorld(cmd.Cmd):
     """Simple command processor example."""
 
@@ -37,6 +45,13 @@ class HelloWorld(cmd.Cmd):
         if not username:
             print "Please login with your <username>"
             return
+
+        # import os.path
+        # os.path.isfile(fname) 
+
+        resp = requests.get("https://green-torus-802.appspot.com/_ah/api/redditapi/v0/user/" + username)
+        data = json.loads(resp.text)
+            
         global user
         user = username
         print "Welcome", username
@@ -82,3 +97,5 @@ class HelloWorld(cmd.Cmd):
 if __name__ == '__main__':
     HelloWorld.prompt = 'xreddit > '
     HelloWorld().cmdloop()
+
+# https://green-torus-802.appspot.com/_ah/api/redditapi/v0/user/ GAE
