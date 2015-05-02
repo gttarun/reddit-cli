@@ -27,4 +27,4 @@ REDIRECT_URI = 'https://green-torus-802.appspot.com/authorize_callback'
 headers = {'user-agent': 'reddit command line interface', 'Authorization': 'bearer ' + '22711848-uibvSlB3lzyijzwR_VsYnaqb_vM'}
 r = requests.get('https://oauth.reddit.com/api/v1/me', headers=headers)
 token_json = r.json()
-print token_json
+print token_json['name']

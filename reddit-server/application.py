@@ -60,33 +60,32 @@ class Handler(webapp2.RequestHandler):
 class RedditAuthorize(Handler):
 
     def get(self):
-        pass
-        #code = self.request.get('code')
+        code = self.request.get('code')
         
-        # # Retrieve access token using code
-        # client_auth = requests.auth.HTTPBasicAuth(CLIENT_ID, CLIENT_SECRET)
-        # post_data = {"grant_type": "authorization_code", "code": code, "redirect_uri": REDIRECT_URI}
+        # Retrieve access token using code
+        client_auth = requests.auth.HTTPBasicAuth(CLIENT_ID, CLIENT_SECRET)
+        post_data = {"grant_type": "authorization_code", "code": code, "redirect_uri": REDIRECT_URI}
         
-        # response = requests.post("https://ssl.reddit.com/api/v1/access_token", auth=client_auth, data=post_data)
-        # token_json = response.json()
-        # access_token = token_json["access_token"]
+        response = requests.post("https://ssl.reddit.com/api/v1/access_token", auth=client_auth, data=post_data)
+        token_json = response.json()
+        access_token = token_json["access_token"]
 
-        # # Get username using code
-        # headers = {'user-agent': 'reddit command line interface', 'Authorization': 'bearer ' + code}
-        # r = requests.get('http://www.reddit.com/api/v1/me', headers=headers)
-        # token_json = r.json()
-        # username = r.text
+        # Get username using code
+        headers = {'user-agent': 'reddit command line interface', 'Authorization': 'bearer ' + access_token}
+        r = requests.get('https://oauth.reddit.com/api/v1/me', headers=headers)
+        token_json = r.json()
+        username = token_json['name']
         
-        # query = db.GqlQuery("select * from User where username=:1 limit 1", username)
-        # user = query.get()
+        query = db.GqlQuery("select * from User where username=:1 limit 1", username)
+        user = query.get()
 
-        # #If user exists
-        # if user:
-        #     if user.hash_key: #If hash key exists
-        #         user.code = access_token
-        #         user.put()
-        # else:
-        #     pass
+        #If user exists
+        if user:
+            if user.hash_key: #If hash key exists
+                user.code = access_token
+                user.put()
+        else:
+            pass
 
         #member = User()
         #member.hash_key = self.hash_str(code)
