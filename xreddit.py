@@ -1,11 +1,20 @@
 import requests, cmd
 from bs4 import BeautifulSoup
 
+set_posts = []
+
 def get_posts(subreddit='', previous=False, next=False, hot=''):
 
     # set user agent and url to request response from reddit
     headers = {'User-Agent': 'reddit-cli'}
-    url = 'https://reddit.com/r/boxing'
+    
+    if (subreddit):
+        if subreddit == '..':
+            url = 'https://reddit.com' # back to main reddit page
+        else:
+            url = 'https://reddit.com/r/' + subreddit # subreddit page
+    else:
+        url = 'https://reddit.com'
 
     # change html response into bs4 object and parse data 
     response = requests.get(url, headers=headers)
@@ -22,21 +31,54 @@ def get_posts(subreddit='', previous=False, next=False, hot=''):
 class HelloWorld(cmd.Cmd):
     """Simple command processor example."""
 
-    def do_login(self, line):
-        print "Welcome gattarun"
+    user = ''
+
+    def do_login(self, username):
+        if not username:
+            print "Please login with your <username>"
+            return
+        global user
+        user = username
+        print "Welcome", username
     
-    def do_feed(self, line):
-        print '\n/r/boxing/ subreddit \n[to view post, "view #"] [next page, "next"] [previous page, "prev"] [main reddit page, "feed .."]\n'
-        for i in range(len(posts)):
-            print i + 1, '::\t', posts[i][1][:100], '..\n'
+    def do_feed(self, subreddit=''):
+        if user:
+            posts = get_posts(subreddit)
+            global set_posts
+            set_posts = posts
+            print '\n', '/r/' + subreddit, 'subreddit'
+            print '[to view post, "view #"] [main reddit page, "feed .."]\n'
+            for i in range(len(posts)):
+                print i + 1, '::\t', posts[i][1][:100], '..\n'
+        else:
+            print "Please login with your <username>"
+            return
 
     def do_view(self, post):
-        print posts[eval(post) - 1][0]
+        try:
+            print set_posts[eval(post) - 1][0]
+        except:
+            print '\nERROR: Please specify "feed" to view a post, feed <none> or feed <subreddit>'
+
+    def do_next(self):
+        pass
+
+    def do_prev(self):
+        pass
+
+    def do_help(self, t):
+        print "\nxreddit help\n------------"
+        print "login <username>"
+        print "feed <none> or feed <subreddit> or feed <..> (return back to main reddit)"
+        print "view <post::number>"
+        print "next (load next page of feed)"
+        print "prev (load previous page of feed)"
+        print "quit"
+        print "\nfor more help, type help(<key>)\n"
 
     def do_quit(self, line):
         return True
 
 if __name__ == '__main__':
-    posts = get_posts()
     HelloWorld.prompt = 'xreddit > '
     HelloWorld().cmdloop()
