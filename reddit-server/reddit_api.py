@@ -15,8 +15,8 @@ from google.appengine.ext import db
 
 SECRET = 'fd340294sdkf9043ls'
 
-CLIENT_ID = 'Ssu0fl-xIUrgYA'
-CLIENT_SECRET = 'fUN46jr4FKuBr_GM1xEu8pDZcsw'
+CLIENT_ID = 'rqtEo4z9O6Wsog'
+CLIENT_SECRET = 'azsGqm3Zm8BBEe6DMfD83Cze9jM'
 #REDIRECT_URI = 'http://green-torus-802.appspot.com/authorize_callback'
 REDIRECT_URI = 'https://green-torus-802.appspot.com/authorize_callback'
 
@@ -108,7 +108,7 @@ class RedditApi(remote.Service):
             s = hashlib.md5(random_data).hexdigest()
             new_hash = hmac.new(SECRET, s, hashlib.sha256).hexdigest()
             
-            r = praw.Reddit(user_agent='some_agent', disable_update_check=True)
+            r = praw.Reddit(user_agent='reddit command line interface', disable_update_check=True)
             r.set_oauth_app_info(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 
             user = User()
@@ -117,7 +117,7 @@ class RedditApi(remote.Service):
             user.code = "none"
             user.put()
 
-            return Code(hash_key=new_hash, url=r.get_authorize_url('UniqueKey', refreshable=True))
+            return Code(hash_key=new_hash, url=r.get_authorize_url('UniqueKey', scope=['identity'], refreshable=True))
         else:
             query = db.GqlQuery(
                 "select * from User where username=:1 limit 1", request.username)
