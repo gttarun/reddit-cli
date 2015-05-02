@@ -38,25 +38,13 @@ class RedditApi(remote.Service):
     @endpoints.method(ID_RESOURCE, Code, path='/hash/{hash_key}', http_method='GET', name='')
  
     def get_code(self, request):
-        if request.hash_key == "none":
-            random_data = os.urandom(128)
-            s = hashlib.md5(random_data).hexdigest()
-            new_hash = hmac.new(SECRET, s, hashlib.sha256).hexdigest()
-            
-            r = praw.Reddit(user_agent='some_agent', disable_update_check=True)
-            r.set_oauth_app_info(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 
-            user = User()
-            user.hash_key = new_hash
-            code = "none"
-
-        else:
-            query = db.GqlQuery(
+        query = db.GqlQuery(
                 "select * from User where hash_key=:1 limit 1", request.hash_key)
-            user = query.get()
+        user = query.get()
 
-            return Code(hash_key=user.hash_key)
-
+        if user:     
+            return Code(code=user.code)
 
     ID_RESOURCE2 = endpoints.ResourceContainer(
         message_types.VoidMessage, username=messages.StringField(1))
@@ -64,7 +52,12 @@ class RedditApi(remote.Service):
     @endpoints.method(ID_RESOURCE2, Code, path='/user/{username}', http_method='GET', name='')
  
     def get_hash(self, request):
-        if request.username:
+
+        query = db.GqlQuery(
+                "select * from User where username=:1 limit 1", request.username)
+        user = query.get()
+
+        if not user:
             random_data = os.urandom(128)
             s = hashlib.md5(random_data).hexdigest()
             new_hash = hmac.new(SECRET, s, hashlib.sha256).hexdigest()
@@ -73,13 +66,15 @@ class RedditApi(remote.Service):
             r.set_oauth_app_info(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 
             user = User()
+            user.username = request.username
             user.hash_key = new_hash
-            code = "none"
+            user.code = "none"
+            user.put()
 
             return Code(hash_key=new_hash, url=r.get_authorize_url('UniqueKey'))
         else:
             query = db.GqlQuery(
-                "select * from User where hash_key=:1 limit 1", request.hash_key)
+                "select * from User where username=:1 limit 1", request.username)
             user = query.get()
 
             return Code(hash_key=user.hash_key)
