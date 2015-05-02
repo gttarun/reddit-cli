@@ -10,6 +10,7 @@ import hashlib
 
 import praw
 import requests
+import requests.auth
 
 from google.appengine.ext import db
 
@@ -23,7 +24,8 @@ jinja_env = jinja2.Environment(autoescape=True, loader=jinja2.FileSystemLoader(
 
 CLIENT_ID = 'Ssu0fl-xIUrgYA'
 CLIENT_SECRET = 'fUN46jr4FKuBr_GM1xEu8pDZcsw'
-REDIRECT_URI = 'http://green-torus-802.appspot.com/authorize_callback'
+#REDIRECT_URI = 'http://green-torus-802.appspot.com/authorize_callback'
+REDIRECT_URI = 'http://localhost:8080/authorize_callback'
 
 class User(db.Model):
     hash_key = db.StringProperty()
@@ -60,29 +62,38 @@ class RedditAuthorize(Handler):
     def get(self):
         
         code = self.request.get('code')
-
+        
         # Retrieve access token using code
-        payload = {'grant_type': 'authorization_code', 'code': code, 'redirect_uri': REDIRECT_URI}
-        r = requests.post("https://www.reddit.com/api/v1/access_token", data=payload)
-        access_token = r.text
-
-        # Get username using code
-        headers = {'user-agent': 'reddit command line interface', 'Authorization': 'bearer ' + code}
-        r = requests.get('http://www.reddit.com/api/v1/me', headers=headers)
-        username = r.text
+        client_auth = requests.auth.HTTPBasicAuth(CLIENT_ID, CLIENT_SECRET)
+        post_data = {"grant_type": "authorization_code", "code": code, "redirect_uri": REDIRECT_URI}
+        
+        response = requests.post("https://ssl.reddit.com/api/v1/access_token", auth=client_auth, data=post_data)
+        token_json = response.json()
+        access_token = token_json["access_token"]
 
         username = 'tabchas'
-        query = db.GqlQuery(
-            "select * from User where username=:1 limit 1", username)
+        query = db.GqlQuery("select * from User where username=:1 limit 1", username)
         user = query.get()
+        user.code = access_token
+        user.put()
+        
+        # Get username using code
+        # headers = {'user-agent': 'reddit command line interface', 'Authorization': 'bearer ' + code}
+        # r = requests.get('http://www.reddit.com/api/v1/me', headers=headers)
+        # username = r.text
 
-        #If user exists
-        if user:
-            if user.hash_key: #If hash key exists
-                user.code = access_token
-                user.put()
-        else:
-            pass
+        
+        # query = db.GqlQuery(
+        #     "select * from User where username=:1 limit 1", username)
+        # user = query.get()
+
+        # #If user exists
+        # if user:
+        #     if user.hash_key: #If hash key exists
+        #         user.code = access_token
+        #         user.put()
+        # else:
+        #     pass
 
         #member = User()
         #member.hash_key = self.hash_str(code)

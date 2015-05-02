@@ -17,7 +17,9 @@ SECRET = 'fd340294sdkf9043ls'
 
 CLIENT_ID = 'Ssu0fl-xIUrgYA'
 CLIENT_SECRET = 'fUN46jr4FKuBr_GM1xEu8pDZcsw'
-REDIRECT_URI = 'http://green-torus-802.appspot.com/authorize_callback'
+#REDIRECT_URI = 'http://green-torus-802.appspot.com/authorize_callback'
+REDIRECT_URI = 'http://localhost:8080/authorize_callback'
+
 
 '''
 Add two columns
