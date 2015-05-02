@@ -1,7 +1,5 @@
-import requests, cmd, os
+import requests, cmd, os, json, webbrowser
 from bs4 import BeautifulSoup
-
-set_posts = []
 
 def get_posts(subreddit='', previous=False, next=False, hot=''):
 
@@ -28,10 +26,9 @@ def get_posts(subreddit='', previous=False, next=False, hot=''):
     
     return posts # a list of posts with title and links
 
-def store_hash(hash_code=''):
+def store_hash(hash_code):
     if hash_code:
-        w_directory = os.getcwd()
-        hash_file = open(w_directory + "hash.txt", "a")
+        hash_file = open("hash.txt", "a")
         hash_file.write(hash_code)
         hash_file.close()
     return
@@ -39,39 +36,28 @@ def store_hash(hash_code=''):
 class HelloWorld(cmd.Cmd):
     """Simple command processor example."""
 
-    user = ''
-
     def do_login(self, username):
-        if not username:
-            print "Please login with your <username>"
-            return
+        if not os.path.isfile("hash.txt"): 
+            resp = requests.get("https://green-torus-802.appspot.com/_ah/api/redditapi/v0/user/" + username)
+            data = json.loads(resp.text)
 
-        # import os.path
-        # os.path.isfile(fname) 
-
-        resp = requests.get("https://green-torus-802.appspot.com/_ah/api/redditapi/v0/user/" + username)
-        data = json.loads(resp.text)
+            store_hash(data['hash_key'])
+            webbrowser.open(data['url'])
             
-        global user
-        user = username
         print "Welcome", username
     
     def do_feed(self, subreddit=''):
-        if user:
-            posts = get_posts(subreddit)
-            global set_posts
-            set_posts = posts
-            print '\n', '/r/' + subreddit, 'subreddit'
-            print '[to view post, "view #"] [main reddit page, "feed .."]\n'
-            for i in range(len(posts)):
-                print i + 1, '::\t', posts[i][1][:100], '..\n'
-        else:
-            print "Please login with your <username>"
-            return
+
+        self.posts = get_posts(subreddit)
+        print '\n', '/r/' + subreddit, 'subreddit'
+        print '[to view post, "view #"] [main reddit page, "feed .."]\n'
+        for i in range(len(self.posts)):
+            print i + 1, '::\t', self.posts[i][1][:100], '..\n'
+
 
     def do_view(self, post):
         try:
-            print set_posts[eval(post) - 1][0]
+            print self.posts[eval(post) - 1][0]
         except:
             print '\nERROR: Please specify "feed" to view a post, feed <none> or feed <subreddit>'
 
