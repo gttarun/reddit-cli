@@ -1,7 +1,7 @@
-import requests
+import requests, cmd
 from bs4 import BeautifulSoup
 
-def get_posts():
+def get_posts(subreddit='', previous=False, next=False, hot=''):
 
     # set user agent and url to request response from reddit
     headers = {'User-Agent': 'reddit-cli'}
@@ -19,12 +19,24 @@ def get_posts():
     
     return posts # a list of posts with title and links
 
-def main():
+class HelloWorld(cmd.Cmd):
+    """Simple command processor example."""
+
+    def do_login(self, line):
+        print "Welcome gattarun"
+    
+    def do_feed(self, line):
+        print '\n/r/boxing/ subreddit \n[to view post, "view #"] [next page, "next"] [previous page, "prev"] [main reddit page, "feed .."]\n'
+        for i in range(len(posts)):
+            print i + 1, '::\t', posts[i][1][:100], '..\n'
+
+    def do_view(self, post):
+        print posts[eval(post) - 1][0]
+
+    def do_quit(self, line):
+        return True
+
+if __name__ == '__main__':
     posts = get_posts()
-
-    for post in posts:
-        print post, ' \n'
-
-    return
-
-main()
+    HelloWorld.prompt = 'xreddit > '
+    HelloWorld().cmdloop()
