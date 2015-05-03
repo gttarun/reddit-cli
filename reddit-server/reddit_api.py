@@ -105,7 +105,7 @@ class RedditApi(remote.Service):
             s = hashlib.md5(random_data).hexdigest()
             new_hash = hmac.new(SECRET, s, hashlib.sha256).hexdigest()
             
-            r = praw.Reddit(user_agent='reddit command line interface', disable_update_check=True)
+            r = praw.Reddit(user_agent='Reddit command line interface v0', disable_update_check=True)
             r.set_oauth_app_info(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
 
             user = User()
