@@ -67,7 +67,7 @@ class RedditAuthorize(Handler):
         access_token = token_json["access_token"]
 
         # Get username using code
-        headers = {'user-agent': 'reddit command line interface', 'Authorization': 'bearer ' + access_token}
+        headers = {'user-agent': 'Reddit command line interface v0', 'Authorization': 'bearer ' + access_token}
         r = requests.get('https://oauth.reddit.com/api/v1/me', headers=headers)
         token_json = r.json()
         username = token_json['name']

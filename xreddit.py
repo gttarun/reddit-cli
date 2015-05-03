@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 def get_posts(subreddit='', previous=False, next=False, hot=''):
 
     # set user agent and url to request response from reddit
-    headers = {'User-Agent': 'reddit-cli'}
+    headers = {'User-Agent': 'Reddit command line interface v0'}
     
     if (subreddit):
         if subreddit == '..':
