@@ -13,13 +13,10 @@ import requests
 
 from google.appengine.ext import db
 
-SECRET = 'fd340294sdkf9043ls'
-
-CLIENT_ID = 'rqtEo4z9O6Wsog'
-CLIENT_SECRET = 'azsGqm3Zm8BBEe6DMfD83Cze9jM'
-#REDIRECT_URI = 'http://green-torus-802.appspot.com/authorize_callback'
+SECRET = os.environ['HASHSECRET']
+CLIENT_ID = os.environ['REDDITID']
+CLIENT_SECRET = os.environ['REDDITSECRET']
 REDIRECT_URI = 'https://green-torus-802.appspot.com/authorize_callback'
-
 
 '''
 Add two columns
