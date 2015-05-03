@@ -24,6 +24,11 @@ def get_posts(subreddit='', previous=False, next=False, hot=''):
     pre_posts = [post.find('p', attrs={'class' : 'title'}) for post in parsed(attrs={'class': 'thing'})]
     posts = [[post.find('a').get('href'), post.get_text()] for post in pre_posts]
 
+    # to get the unique post id and it to posts list
+    post_id = [id_post.find('a').get('href') for id_post in parsed(attrs={'class': 'first'})]
+    for i in range(len(post_id)):
+        posts[i].append(post_id[i])
+
     return posts # a list of posts with title and links
 
 def store_hash(hash_code):
@@ -52,7 +57,7 @@ class HelloWorld(cmd.Cmd):
 
         self.posts.extend(get_posts(subreddit))
         self.subreddit = subreddit
-        print '\n', '/r/' + subreddit, 'subreddit'
+        print '\n', '/r/' + self.subreddit, 'subreddit'
         print '[to view post, "view #"] [main reddit page, "feed .."]\n'
         if self.count == 1:
             print '\t', self.posts[0][1][:100], '..\n'
@@ -66,12 +71,17 @@ class HelloWorld(cmd.Cmd):
             print '\nERROR: Please specify "feed" to view a post, feed <none> or feed <subreddit>'
 
     def do_next(self, use):
-        next_page = self.posts[-1][0].split("/")
+        next_page = self.posts[-1][2].split("/")
         next_key = [next_page[i + 1] for i in range(len(next_page)) if next_page[i] == 'comments']
-        print next_page, next_key
 
         self.count = len(self.posts)
-        #do_feed('/r/' + self.subreddit + '/?count=' + str(len(self.post) - 1) + '&after=t3_' + str(next_key))
+        self.posts.extend(get_posts(self.subreddit + '/?count=' + str(len(self.posts) - 1) + '&after=t3_' + str(next_key[0])))
+        print '\n', '/r/' + self.subreddit, 'subreddit'
+        print '[to view post, "view #"] [main reddit page, "feed .."]\n'
+        if self.count == 1:
+            print '\t', self.posts[0][1][:100], '..\n'
+        for i in range(self.count, len(self.posts)):
+            print i, '::\t', self.posts[i][1][:100], '..\n'
 
     def do_prev(self):
         pass
