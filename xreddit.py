@@ -1,6 +1,19 @@
 import requests, cmd, os, json, webbrowser
 from bs4 import BeautifulSoup
 
+
+# NEED TO BE DONE
+
+# some pages have an extra post with no rank and others don't, sort accordingly
+# check {attr['class': 'domain']} for the redirect site (reddit, facebook, youtube, etc)
+# include number of upvotes
+# also need to probably  include a way to upvote as user, api call?
+# message system @user
+# different tabs in each subreddit (hot, new, rising, controversial, etc.)
+# clean up
+
+
+
 def get_posts(subreddit='', previous=False, next=False, hot=''):
 
     # set user agent and url to request response from reddit
@@ -49,17 +62,20 @@ class HelloWorld(cmd.Cmd):
         #     store_hash(data['hash_key'])
         #     webbrowser.open(data['url'])
 
+        self.user = username
         self.old_count = 1
         self.posts = [] # empty list to contain posts of a <subreddit> if specified
         self.count = 1 # set count
-        print "Welcome", username
+        print "Welcome", self.user
     
     def do_feed(self, subreddit=''):
-
+        self.subreddit = subreddit # set subreddit for future navigation
         self.posts.extend(get_posts(subreddit))
-        self.subreddit = subreddit
+
+        # navigating posts info.
         print '\n', '/r/' + self.subreddit, 'subreddit'
         print '[to view post, "view #"] [main reddit page, "feed .."]\n'
+
         if self.count == 1:
             print '\t', self.posts[0][1][:100], '..\n'
         for i in range(self.count, len(self.posts)):
