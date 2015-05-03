@@ -49,6 +49,7 @@ class HelloWorld(cmd.Cmd):
         #     store_hash(data['hash_key'])
         #     webbrowser.open(data['url'])
 
+        self.old_count = 1
         self.posts = [] # empty list to contain posts of a <subreddit> if specified
         self.count = 1 # set count
         print "Welcome", username
@@ -70,10 +71,11 @@ class HelloWorld(cmd.Cmd):
         except:
             print '\nERROR: Please specify "feed" to view a post, feed <none> or feed <subreddit>'
 
-    def do_next(self, use):
+    def do_next(self, forward):
         next_page = self.posts[-1][2].split("/")
         next_key = [next_page[i + 1] for i in range(len(next_page)) if next_page[i] == 'comments']
 
+        self.old_count = self.count
         self.count = len(self.posts)
         self.posts.extend(get_posts(self.subreddit + '/?count=' + str(len(self.posts) - 1) + '&after=t3_' + str(next_key[0])))
         print '\n', '/r/' + self.subreddit, 'subreddit'
@@ -83,8 +85,14 @@ class HelloWorld(cmd.Cmd):
         for i in range(self.count, len(self.posts)):
             print i, '::\t', self.posts[i][1][:100], '..\n'
 
-    def do_prev(self):
-        pass
+    def do_prev(self, back):
+        self.count, self.old_count = self.old_count, self.count
+        print '\n', '/r/' + self.subreddit, 'subreddit'
+        print '[to view post, "view #"] [main reddit page, "feed .."]\n'
+        if self.count == 1:
+            print '\t', self.posts[0][1][:100], '..\n'
+        for i in range(self.count, self.old_count):
+            print i, '::\t', self.posts[i][1][:100], '..\n'
 
     def do_help(self, t):
         print "\nxreddit help\n------------"
