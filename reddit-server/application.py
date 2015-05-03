@@ -83,22 +83,13 @@ class RedditAuthorize(Handler):
         else:
             pass
 
-        #member = User()
-        #member.hash_key = self.hash_str(code)
-        #member.code = code
-        #member.put()
-
     def post(self):
         pass
 
 class MainPage(Handler):
 
     def get(self):
-        
-        r = praw.Reddit(user_agent='some_agent', disable_update_check=True)
-        r.set_oauth_app_info(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI)
-        
-        self.redirect(r.get_authorize_url('UniqueKey', scope=['identity'], refreshable=True))
+        pass
 
     def post(self):
         pass
