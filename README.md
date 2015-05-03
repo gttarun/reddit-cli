@@ -1,1 +1,2 @@
-Command line interface for reddit
+**Reddit Command Line Interface**
+=================================
