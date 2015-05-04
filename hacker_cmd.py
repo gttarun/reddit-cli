@@ -84,11 +84,17 @@ class HackerCmd(cmd.Cmd):
             print self.posts[post]['score'], '::\t', self.posts[post]['title'][:75] + '..', self.posts[post]['domain']
             print "\t", self.posts[post]['comments'], '\n' 
 
-    def do_view(self, post):
-        try:
-            print self.posts[eval(post) - 1][0]
-        except:
-            print '\nERROR: Please specify "feed" to view a post, feed <none> or feed <subreddit>'
+    def do_view(self, rank):
+        for post in self.posts:
+            if self.posts[post]['rank'] == rank:
+                if (self.posts[post]['domain'][:3] == '/r/'):
+                    webbrowser.open('http://www.reddit.com' + self.posts[post]['link'])
+                    return
+                else:
+                    webbrowser.open(self.posts[post]['link'])
+                    return
+
+        print '\nERROR: Please specify "feed" to view a post, feed <none> or feed <subreddit>'
 
     def do_help(self, t):
         print "\nxreddit help\n------------"
