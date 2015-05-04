@@ -54,9 +54,14 @@ def get_posts(subreddit='', sort=''):
 
     return posts # a list of posts with title and links
 
+def get_hash(username):
+    r = requests.get('https://green-torus-802.appspot.com/_ah/api/redditapi/v0/user/' + username)
+    jsonOut = json.loads(r.text)
+    return jsonOut['hash_key']
+
 def store_hash(hash_code):
     if hash_code:
-        hash_file = open("hash.txt", "a")
+        hash_file = open("hash.txt", "w")
         hash_file.write(hash_code)
         hash_file.close()
     return
@@ -69,6 +74,10 @@ class HackerCmd(cmd.Cmd):
         self.user = username
         self.page = 1
         self.posts = {}
+
+        hash_key = get_hash(self.user)
+        store_hash(hash_key)
+
         print "Welcome HACKER" 
     
     # show specified <subreddit> feed
