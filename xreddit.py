@@ -2,7 +2,6 @@
 import cmd
 import sys
 
-import natural_cmd
 import hacker_cmd
 
 if __name__ == '__main__':
@@ -12,6 +11,7 @@ if __name__ == '__main__':
             hacker_cmd.HackerCmd.prompt = 'xreddit > '
             hacker_cmd.HackerCmd().cmdloop()
     else:
+    	import natural_cmd
         natural_cmd.RedditCmd.prompt = 'xreddit > '
         natural_cmd.RedditCmd().cmdloop()
 
