@@ -2,33 +2,55 @@
 import requests, cmd, os, json, webbrowser
 from bs4 import BeautifulSoup
 
-def get_posts(subreddit='', previous=False, next=False, hot=''):
+# NEED TO BE DONE
+
+# some pages have an extra post with no rank and others don't, sort accordingly
+# check {attr['class': 'domain']} for the redirect site (reddit, facebook, youtube, etc)
+# include number of upvotes
+# also need to probably  include a way to upvote as user, api call?
+# message system @user
+# different tabs in each subreddit (hot, new, rising, controversial, etc.)
+# clean up
+
+def get_posts(subreddit='', sort=''):
 
     # set user agent and url to request response from reddit
     headers = {'User-Agent': 'Reddit command line interface v0'}
     
-    if (subreddit):
-        if subreddit == '..':
-            url = 'https://reddit.com' # back to main reddit page
-        else:
-            url = 'https://reddit.com/r/' + subreddit # subreddit page
-    else:
+    # load page response according t subreddit & sort category (hot, new, rising, etc)
+    if subreddit == '..' or subreddit == 'home':
         url = 'https://reddit.com'
+    elif subreddit:
+        url = 'https://reddit.com/r/' + subreddit
+    else:
+        url = 'http://reddit.com'
+
+    url = url + '/' + sort
 
     # change html response into bs4 object and parse data 
     response = requests.get(url, headers=headers)
     html = response.text
     soup = BeautifulSoup(html)
     parsed = soup.find(id='siteTable')
+    
+    # get all atributes of a post
+    rank = [post.get_text() for post in parsed(attrs={'class': 'rank'})]
+    title = [post.get_text() for post in parsed(attrs={'class': 'title may-blank '})]
+    domain = [post.get_text() for post in parsed(attrs={'class': 'domain'})]
+    link = [post.get('href') for post in parsed(attrs={'class': 'title may-blank '})]
+    flair = [post.get_text() for post in parsed(attrs={'class': 'linkflairlabel'})]
+    post_id = [post.get('data-fullname') for post in parsed(attrs={'class' : 'thing'})]
+    score = [post.get_text() for post in parsed(attrs={'class': 'score unvoted'})]
+    comments = [post.get_text() for post in parsed(attrs={'class': 'first'})]
+    extra = [id_post.find('a').get('href') for id_post in parsed(attrs={'class': 'first'})]
 
-    # extract just the title of the post and its link
-    pre_posts = [post.find('p', attrs={'class' : 'title'}) for post in parsed(attrs={'class': 'thing'})]
-    posts = [[post.find('a').get('href'), post.get_text()] for post in pre_posts]
+    posts = {}
 
-    # to get the unique post id and it to posts list
-    post_id = [id_post.find('a').get('href') for id_post in parsed(attrs={'class': 'first'})]
-    for i in range(len(post_id)):
-        posts[i].append(post_id[i])
+    # create a dictionary containing posts and info. for each of them
+    for i in range(1, len(post_id)):
+        posts[post_id[i]] = {'rank': rank[i], 'title':title[i], 'domain':domain[i], 
+                            'link':link[i], 'post_id':post_id[i], 'score':score[i],
+                            'comments':comments[i],'extra':extra[i]}
 
     return posts # a list of posts with title and links
 
@@ -39,7 +61,7 @@ def store_hash(hash_code):
         hash_file.close()
     return
 
-class HelloWorld(cmd.Cmd):
+class RedditCmd(cmd.Cmd):
     """Simple command processor example."""
 
     def do_login(self, username):
