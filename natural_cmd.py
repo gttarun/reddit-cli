@@ -27,8 +27,13 @@ def get_posts(subreddit='', sort=''):
 
     url = url + '/' + sort
 
-    # change html response into bs4 object and parse data 
-    response = requests.get(url, headers=headers)
+    # change html response into bs4 object and parse data
+    try: 
+        response = requests.get(url, headers=headers)
+    except:
+        print "ERROR: invalid request, and or could not recieve response from %s" %url
+        return {} # bad response
+
     html = response.text
     soup = BeautifulSoup(html)
     parsed = soup.find(id='siteTable')
@@ -76,6 +81,7 @@ class RedditCmd(cmd.Cmd):
         self.user = username
         self.page = 1
         self.posts = {}
+        self.subreddit = ''
 
         # hash_key = get_hash(self.user)
         # store_hash(hash_key)
@@ -83,15 +89,26 @@ class RedditCmd(cmd.Cmd):
         print "Welcome", self.user
     
     # show specified <subreddit> feed
-    def do_feed(self, subreddit=''):
+    def do_feed(self, subreddit='', sort=''):
         self.start = 0
         self.limit = 8
+
+        # if user changes subreddit, remove previous history and clear everything
+        if subreddit != self.subreddit:
+            self.posts = {}
+            self.page = 1
+            self.posts = {}
+
         self.subreddit = subreddit # set subreddit for future navigation
-        self.posts.update(get_posts(subreddit)) # populate dictionary
+        self.posts.update(get_posts(subreddit, sort)) # populate dictionary
 
         # navigating posts info.
         print '\n', '/r/' + self.subreddit, 'subreddit'
         print '[to view post, "view #"] [main reddit page, "feed .."]\n'
+
+        if not self.posts:
+            print "oops, there doesn't seem to be anything here\n"
+            return
 
         for rank in range(self.start, self.limit):
             try:
@@ -107,6 +124,7 @@ class RedditCmd(cmd.Cmd):
             self.start = len(self.posts)
             self.subreddit = self.subreddit + '/?count=' + str(len(self.posts) - 1) + '&after=' + self.posts[len(self.posts) - 1]['post_id']
             self.posts.update(get_posts(self.subreddit)) # populate dictionary
+            self.page += 1
             self.limit += 8
 
          # navigating posts info.
