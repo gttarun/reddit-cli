@@ -1,6 +1,9 @@
 
 import requests, cmd, os, json, webbrowser
 from bs4 import BeautifulSoup
+from PIL import Image
+import requests
+from StringIO import StringIO
 
 # NEED TO BE DONE
 
@@ -163,6 +166,14 @@ class RedditCmd(cmd.Cmd):
             webbrowser.open('https://www.reddit.com' + self.posts[rank]['link'])
             return
         else:
+            if ('imgur' in self.posts[rank]['link']):
+                if ('i.imgur' in self.posts[rank]['domain']):
+                    response = requests.get(self.posts[rank]['link'])
+                else:
+                    response = requests.get('i.' + self.posts[rank]['link'])
+                img = Image.open(StringIO(response.content))
+                img.show()
+                return
             webbrowser.open(self.posts[rank]['link'])
             return
 
@@ -177,8 +188,8 @@ class RedditCmd(cmd.Cmd):
     def do_help(self, t):
         print "\nxreddit help\n------------"
         print "login <username>"
-        print "feed <none> or feed <subreddit> or feed <..> (return back to main reddit)"
-        print "view <post::number>"
+        print "feed <none> <sort> or feed <subreddit> <sort> or feed <..> (return back to main reddit)"
+        print "view <rank>"
         print "next (load next page of feed)"
         print "prev (load previous page of feed)"
         print "quit"
