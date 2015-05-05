@@ -85,6 +85,7 @@ class RedditCmd(cmd.Cmd):
         self.page = 1
         self.posts = {}
         self.subreddit = ''
+        self.sort = ''
 
         # hash_key = get_hash(self.user)
         # store_hash(hash_key)
@@ -92,9 +93,10 @@ class RedditCmd(cmd.Cmd):
         print "Welcome", self.user
     
     # show specified <subreddit> feed
-    def do_feed(self, subreddit='', sort=''):
+    def do_feed(self, subreddit=''):
         self.start = 0
         self.limit = 8
+
 
         # if user changes subreddit, remove previous history and clear everything
         if subreddit != self.subreddit:
@@ -102,8 +104,12 @@ class RedditCmd(cmd.Cmd):
             self.page = 1
             self.posts = {}
 
-        self.subreddit = subreddit # set subreddit for future navigation
-        self.posts.update(get_posts(subreddit, sort)) # populate dictionary
+        self.subreddit = subreddit.split(' ')[0]
+        try:
+            self.sort = subreddit.split(' ')[1]
+        except:
+            pass
+        self.posts.update(get_posts(self.subreddit, self.sort)) # populate dictionary
 
         # navigating posts info.
         print '\n', '/r/' + self.subreddit, 'subreddit'

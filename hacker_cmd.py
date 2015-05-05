@@ -93,9 +93,12 @@ class HackerCmd(cmd.Cmd):
         print "Welcome HACKER!"
 
     # can change subreddit in a more familiar way :)
-    def do_cd(self, subreddit='', sort=''):
-        self.subreddit = subreddit
-        self.sort = sort
+    def do_cd(self, subreddit=''):
+        self.subreddit = subreddit.split(' ')[0]
+        try:
+            self.sort = subreddit.split(' ')[1]
+        except:
+            pass
         if subreddit != self.subreddit:
             self.page = 1
             self.start = 0
