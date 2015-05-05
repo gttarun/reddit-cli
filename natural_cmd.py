@@ -79,6 +79,10 @@ def store_hash(hash_code):
 class RedditCmd(cmd.Cmd):
     """Simple command processor example."""
 
+    # just some categoies to search for
+    categories = ['boxing', 'movies', 'music', 'cooking', 'pics', 'leagueoflegends', 
+                 'basketball', 'python', 'news', 'funny', 'jokes', 'art', 'fitness']
+
     # set username and initialize class variables
     def do_login(self, username):
         self.user = username
@@ -184,6 +188,16 @@ class RedditCmd(cmd.Cmd):
             return
 
         print '\nERROR: Please specify "feed" to view a post, feed <none> or feed <subreddit>'
+
+    def complete_feed(self, text, line, begidx, endidx):
+        if not text:
+            completions = self.categories[:]
+        else:
+            completions = [ f
+                            for f in self.categories
+                            if f.startswith(text)
+                            ]
+        return completions
 
     # for TESTING
     def do_show(self, rank):
