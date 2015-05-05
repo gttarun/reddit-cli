@@ -47,16 +47,23 @@ def get_posts(subreddit='', sort=''):
     posts = {}
 
     # create a dictionary containing posts and info. for each of them
-    for i in range(1, len(post_id)):
-        posts[post_id[i]] = {'rank': rank[i], 'title':title[i], 'domain':domain[i], 
+    for i in range(len(rank)):
+        if rank[i] == '':
+            rank[i] = '0'
+        posts[eval(rank[i])] = {'rank': eval(rank[i]), 'title':title[i], 'domain':domain[i], 
                             'link':link[i], 'post_id':post_id[i], 'score':score[i],
                             'comments':comments[i],'extra':extra[i]}
 
     return posts # a list of posts with title and links
 
+def get_hash(username):
+    r = requests.get('https://green-torus-802.appspot.com/_ah/api/redditapi/v0/user/' + username)
+    jsonOut = json.loads(r.text)
+    return jsonOut['hash_key']
+
 def store_hash(hash_code):
     if hash_code:
-        hash_file = open("hash.txt", "a")
+        hash_file = open("hash.txt", "w")
         hash_file.write(hash_code)
         hash_file.close()
     return
@@ -69,6 +76,10 @@ class RedditCmd(cmd.Cmd):
         self.user = username
         self.page = 1
         self.posts = {}
+
+        hash_key = get_hash(self.user)
+        store_hash(hash_key)
+
         print "Welcome", self.user
     
     # show specified <subreddit> feed
@@ -80,21 +91,29 @@ class RedditCmd(cmd.Cmd):
         print '\n', '/r/' + self.subreddit, 'subreddit'
         print '[to view post, "view #"] [main reddit page, "feed .."]\n'
 
-        for post in self.posts:
-            print self.posts[post]['score'], '::\t', self.posts[post]['title'][:75] + '..', self.posts[post]['domain']
-            print "\t", self.posts[post]['comments'], '\n' 
+        for rank in range(len(self.posts)):
+            try:
+                print self.posts[rank]['rank'],'|\t',  self.posts[rank]['score'], '::\t', self.posts[rank]['title'][:75] + '..', self.posts[rank]['domain']
+                print "\t\t", self.posts[rank]['comments'], '\n'
+            except:
+                pass
 
     def do_view(self, rank):
-        for post in self.posts:
-            if self.posts[post]['rank'] == rank:
-                if (self.posts[post]['domain'][:3] == '/r/'):
-                    webbrowser.open('http://www.reddit.com' + self.posts[post]['link'])
-                    return
-                else:
-                    webbrowser.open(self.posts[post]['link'])
-                    return
+        rank = eval(rank)
+        if (self.posts[rank]['link'][:3] == '/r/'):
+            webbrowser.open('https://www.reddit.com' + self.posts[rank]['link'])
+            return
+        else:
+            webbrowser.open(self.posts[rank]['link'])
+            return
 
         print '\nERROR: Please specify "feed" to view a post, feed <none> or feed <subreddit>'
+
+    # for TESTING
+    def do_show(self, rank):
+        rank = eval(rank)
+        print self.posts[rank]['link']
+        print self.posts[rank]['domain']
 
     def do_help(self, t):
         print "\nxreddit help\n------------"
