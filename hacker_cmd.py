@@ -1,6 +1,9 @@
 
 import requests, cmd, os, json, webbrowser
 from bs4 import BeautifulSoup
+from PIL import Image
+import requests
+from StringIO import StringIO
 
 # NEED TO BE DONE
 
@@ -27,8 +30,13 @@ def get_posts(subreddit='', sort=''):
 
     url = url + '/' + sort
 
-    # change html response into bs4 object and parse data 
-    response = requests.get(url, headers=headers)
+    # change html response into bs4 object and parse data
+    try: 
+        response = requests.get(url, headers=headers)
+    except:
+        print "ERROR: invalid request, and or could not recieve response from %s" %url
+        return {} # bad response
+
     html = response.text
     soup = BeautifulSoup(html)
     parsed = soup.find(id='siteTable')
@@ -76,22 +84,37 @@ class HackerCmd(cmd.Cmd):
         self.user = username
         self.page = 1
         self.posts = {}
+        self.subreddit = ''
+        self.sort = ''
 
         # hash_key = get_hash(self.user)
         # store_hash(hash_key)
 
         print "Welcome HACKER!"
+
+    # can change subreddit in a more familiar way :)
+    def do_cd(self, subreddit='', sort=''):
+        self.subreddit = subreddit
+        self.sort = sort
+        if subreddit != self.subreddit:
+            self.page = 1
+            self.start = 0
+            self.limit = 8
+            self.posts = {}
     
     # show specified <subreddit> feed
-    def do_feed(self, subreddit=''):
+    def do_feed(self, not_used):
         self.start = 0
         self.limit = 8
-        self.subreddit = subreddit # set subreddit for future navigation
-        self.posts.update(get_posts(subreddit)) # populate dictionary
+        self.posts.update(get_posts(self.subreddit, self.sort)) # populate dictionary
 
         # navigating posts info.
         print '\n', '/r/' + self.subreddit, 'subreddit'
         print '[to view post, "view #"] [main reddit page, "feed .."]\n'
+
+        if not self.posts:
+            print "oops, there doesn't seem to be anything here\n"
+            return
 
         for rank in range(self.start, self.limit):
             try:
@@ -107,6 +130,7 @@ class HackerCmd(cmd.Cmd):
             self.start = len(self.posts)
             self.subreddit = self.subreddit + '/?count=' + str(len(self.posts) - 1) + '&after=' + self.posts[len(self.posts) - 1]['post_id']
             self.posts.update(get_posts(self.subreddit)) # populate dictionary
+            self.page += 1
             self.limit += 8
 
          # navigating posts info.
@@ -145,6 +169,14 @@ class HackerCmd(cmd.Cmd):
             webbrowser.open('https://www.reddit.com' + self.posts[rank]['link'])
             return
         else:
+            if ('imgur' in self.posts[rank]['link']):
+                if ('i.imgur' in self.posts[rank]['domain']):
+                    response = requests.get(self.posts[rank]['link'])
+                else:
+                    response = requests.get('i.' + self.posts[rank]['link'])
+                img = Image.open(StringIO(response.content))
+                img.show()
+                return
             webbrowser.open(self.posts[rank]['link'])
             return
 
@@ -159,8 +191,8 @@ class HackerCmd(cmd.Cmd):
     def do_help(self, t):
         print "\nxreddit help\n------------"
         print "login <username>"
-        print "feed <none> or feed <subreddit> or feed <..> (return back to main reddit)"
-        print "view <post::number>"
+        print "feed <none> <sort> or feed <subreddit> <sort> or feed <..> (return back to main reddit)"
+        print "view <rank>"
         print "next (load next page of feed)"
         print "prev (load previous page of feed)"
         print "quit"
