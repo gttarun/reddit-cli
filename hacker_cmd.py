@@ -23,7 +23,7 @@ def get_posts(subreddit='', sort=''):
     elif subreddit:
         url = 'https://reddit.com/r/' + subreddit
     else:
-        url = 'http://reddit.com'
+        url = 'https://reddit.com'
 
     url = url + '/' + sort
 
@@ -47,10 +47,12 @@ def get_posts(subreddit='', sort=''):
     posts = {}
 
     # create a dictionary containing posts and info. for each of them
-    for i in range(1, len(post_id)):
-        posts[post_id[i]] = {'rank': rank[i], 'title':title[i], 'domain':domain[i], 
+    for i in range(len(rank)):
+        if rank[i] == '':
+            rank[i] = '0'
+        posts[eval(rank[i])] = {'rank': eval(rank[i]), 'title':title[i], 'domain':domain[i], 
                             'link':link[i], 'post_id':post_id[i], 'score':score[i],
-                            'comments':comments[i],'extra':extra[i]}
+                            'comments':comments[i]}
 
     return posts # a list of posts with title and links
 
@@ -75,13 +77,15 @@ class HackerCmd(cmd.Cmd):
         self.page = 1
         self.posts = {}
 
-        hash_key = get_hash(self.user)
-        store_hash(hash_key)
+        # hash_key = get_hash(self.user)
+        # store_hash(hash_key)
 
-        print "Welcome HACKER" 
+        print "Welcome HACKER!"
     
     # show specified <subreddit> feed
     def do_feed(self, subreddit=''):
+        self.start = 0
+        self.limit = 8
         self.subreddit = subreddit # set subreddit for future navigation
         self.posts.update(get_posts(subreddit)) # populate dictionary
 
@@ -89,21 +93,68 @@ class HackerCmd(cmd.Cmd):
         print '\n', '/r/' + self.subreddit, 'subreddit'
         print '[to view post, "view #"] [main reddit page, "feed .."]\n'
 
-        for post in self.posts:
-            print self.posts[post]['score'], '::\t', self.posts[post]['title'][:75] + '..', self.posts[post]['domain']
-            print "\t", self.posts[post]['comments'], '\n' 
+        for rank in range(self.start, self.limit):
+            try:
+                print self.posts[rank]['rank'],'|\t',  self.posts[rank]['score'], '::\t', self.posts[rank]['title'][:75] + '..', self.posts[rank]['domain']
+                print "\t\t", self.posts[rank]['comments'], '\n'
+            except:
+                pass
+
+    def do_next(self, not_used):
+        self.start = self.limit
+        self.limit += 8
+        if self.limit > len(self.posts):
+            self.start = len(self.posts)
+            self.subreddit = self.subreddit + '/?count=' + str(len(self.posts) - 1) + '&after=' + self.posts[len(self.posts) - 1]['post_id']
+            self.posts.update(get_posts(self.subreddit)) # populate dictionary
+            self.limit += 8
+
+         # navigating posts info.
+        print '\n', '/r/' + self.subreddit, 'subreddit'
+        print '[to view post, "view #"] [main reddit page, "feed .."]\n'
+
+        for rank in range(self.start, self.limit):
+            try:
+                print self.posts[rank]['rank'],'|\t',  self.posts[rank]['score'], '::\t', self.posts[rank]['title'][:75] + '..', self.posts[rank]['domain']
+                print "\t\t", self.posts[rank]['comments'], '\n'
+            except:
+                pass
+
+    def do_prev(self, not_used):
+        self.start -= 8
+        self.limit -= 8
+        if self.start < 0:
+            self.start = 0
+        if self.limit <= 0:
+            self.limit = 8
+
+         # navigating posts info.
+        print '\n', '/r/' + self.subreddit, 'subreddit'
+        print '[to view post, "view #"] [main reddit page, "feed .."]\n'
+
+        for rank in range(self.start, self.limit):
+            try:
+                print self.posts[rank]['rank'],'|\t',  self.posts[rank]['score'], '::\t', self.posts[rank]['title'][:75] + '..', self.posts[rank]['domain']
+                print "\t\t", self.posts[rank]['comments'], '\n'
+            except:
+                pass
 
     def do_view(self, rank):
-        for post in self.posts:
-            if self.posts[post]['rank'] == rank:
-                if (self.posts[post]['domain'][:3] == '/r/'):
-                    webbrowser.open('http://www.reddit.com' + self.posts[post]['link'])
-                    return
-                else:
-                    webbrowser.open(self.posts[post]['link'])
-                    return
+        rank = eval(rank)
+        if (self.posts[rank]['link'][:3] == '/r/'):
+            webbrowser.open('https://www.reddit.com' + self.posts[rank]['link'])
+            return
+        else:
+            webbrowser.open(self.posts[rank]['link'])
+            return
 
         print '\nERROR: Please specify "feed" to view a post, feed <none> or feed <subreddit>'
+
+    # for TESTING
+    def do_show(self, rank):
+        rank = eval(rank)
+        print self.posts[rank]['link']
+        print self.posts[rank]['domain']
 
     def do_help(self, t):
         print "\nxreddit help\n------------"
