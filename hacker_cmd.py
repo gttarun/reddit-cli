@@ -64,10 +64,18 @@ def get_posts(subreddit='', sort=''):
 
     return posts # a list of posts with title and links
 
+def get_token():
+    with open('hash.txt', 'r') as hash_file:
+        hash_key = hash_file.readline()
+
+    r = requests.get('https://green-torus-802.appspot.com/_ah/api/redditapi/v0/hash/' + hash_key)
+    jsonOut = json.loads(r.text)
+    return jsonOut['access_token']
+
 def get_hash(username):
     r = requests.get('https://green-torus-802.appspot.com/_ah/api/redditapi/v0/user/' + username)
     jsonOut = json.loads(r.text)
-    return jsonOut['hash_key']
+    return jsonOut
 
 def store_hash(hash_code):
     if hash_code:
@@ -91,8 +99,17 @@ class HackerCmd(cmd.Cmd):
         self.subreddit = ''
         self.sort = ''
 
-        # hash_key = get_hash(self.user)
-        # store_hash(hash_key)
+        if os.path.isfile("hash.txt"):
+            self.token = get_token()
+            print self.token
+        else:
+            jsonData = get_hash(username)
+            authorize_url = jsonData['url']
+            hash_key = jsonData['hash_key']
+
+            webbrowser.open(authorize_url)
+
+            store_hash(hash_key)
 
         print "Welcome HACKER!"
 
