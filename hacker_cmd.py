@@ -38,19 +38,27 @@ def get_posts(subreddit='', sort=''):
         return {} # bad response
 
     html = response.text
+    html = html[html.find('<div id="siteTable" class="sitetable linklisting">'):]
     soup = BeautifulSoup(html)
-    parsed = soup.find(id='siteTable')
+    parsed = soup.findAll("div", attrs={ "class" : "thing" })
     
     # get all atributes of a post
-    rank = [post.get_text() for post in parsed(attrs={'class': 'rank'})]
-    title = [post.get_text() for post in parsed(attrs={'class': 'title may-blank '})]
-    domain = [post.get_text() for post in parsed(attrs={'class': 'domain'})]
-    link = [post.get('href') for post in parsed(attrs={'class': 'title may-blank '})]
-    flair = [post.get_text() for post in parsed(attrs={'class': 'linkflairlabel'})]
-    post_id = [post.get('data-fullname') for post in parsed(attrs={'class' : 'thing'})]
-    score = [post.get_text() for post in parsed(attrs={'class': 'score unvoted'})]
-    comments = [post.get_text() for post in parsed(attrs={'class': 'first'})]
-    extra = [id_post.find('a').get('href') for id_post in parsed(attrs={'class': 'first'})]
+    rank = [[rank.get_text() for rank in post(attrs={'class': 'rank'})] for post in parsed]
+    title = [[title.get_text() for title in post(attrs={'class': 'title may-blank '})] for post in parsed]
+    domain = [[domain.get_text() for domain in post(attrs={'class': 'domain'})] for post in parsed]
+    link = [[link.get('href') for link in post(attrs={'class': 'title may-blank '})] for post in parsed]
+    post_id = [post.get('data-fullname') for post in parsed]
+    score = [[score.get_text() for score in post(attrs={'class': 'score unvoted'})] for post in parsed]
+    comments = [[comment.get_text() for comment in post(attrs={'class': 'first'})] for post in parsed]
+
+    # remove lists of list, create 1d list for all post attributes
+    rank = [rank[i][0] for i in range(len(rank))]
+    title = [title[i][0] for i in range(len(title))]
+    domain = [domain[i][0] for i in range(len(domain))]
+    link = [link[i][0] for i in range(len(link))]
+    post_id = [post_id[i][0] for i in range(len(post_id))]
+    score = [score[i][0] for i in range(len(score))]
+    comments = [comments[i][0] for i in range(len(comments))]
 
     posts = {}
 
@@ -122,14 +130,14 @@ class HackerCmd(cmd.Cmd):
             pass
         if subreddit != self.subreddit:
             self.page = 1
-            self.start = 0
-            self.limit = 8
+            self.start = 1
+            self.limit = 6
             self.posts = {}
     
     # show specified <subreddit> feed
     def do_feed(self, not_used):
-        self.start = 0
-        self.limit = 8
+        self.start = 1
+        self.limit = 6
         self.posts.update(get_posts(self.subreddit, self.sort)) # populate dictionary
 
         # navigating posts info.
@@ -149,15 +157,13 @@ class HackerCmd(cmd.Cmd):
 
     def do_next(self, not_used):
         self.start = self.limit
-        self.limit += 8
-        if self.limit > len(self.posts):
-            self.start = len(self.posts)
+        self.limit += 5
+        if (self.limit % (self.page * 25)) == 6:
             self.subreddit = self.subreddit + '/?count=' + str(len(self.posts) - 1) + '&after=' + self.posts[len(self.posts) - 1]['post_id']
             self.posts.update(get_posts(self.subreddit)) # populate dictionary
             self.page += 1
-            self.limit += 8
 
-         # navigating posts info.
+        # navigating posts info.
         print '\n', '/r/' + self.subreddit, 'subreddit'
         print '[to view post, "view #"] [main reddit page, "feed .."]\n'
 
@@ -169,12 +175,12 @@ class HackerCmd(cmd.Cmd):
                 pass
 
     def do_prev(self, not_used):
-        self.start -= 8
-        self.limit -= 8
+        self.start -= 5
+        self.limit -= 5
         if self.start < 0:
             self.start = 0
         if self.limit <= 0:
-            self.limit = 8
+            self.limit = 5
 
          # navigating posts info.
         print '\n', '/r/' + self.subreddit, 'subreddit'
