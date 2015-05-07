@@ -5,10 +5,6 @@ from PIL import Image
 import requests
 from StringIO import StringIO
 
-# NEED TO BE DONE
-
-# i.https://imgur FIX THIS
-
 def get_posts(subreddit='', sort=''):
 
     # set user agent and url to request response from reddit
@@ -41,6 +37,7 @@ def get_posts(subreddit='', sort=''):
     title = [[title.get_text() for title in post(attrs={'class': 'title may-blank '})] for post in parsed]
     domain = [[domain.get_text() for domain in post(attrs={'class': 'domain'})] for post in parsed]
     link = [[link.get('href') for link in post(attrs={'class': 'title may-blank '})] for post in parsed]
+    flair = [[tag.get_text() for tag in post(attrs={'class': 'linkflairlabel'})] for post in parsed]
     post_id = [post.get('data-fullname') for post in parsed]
     score = [[score.get_text() for score in post(attrs={'class': 'score unvoted'})] for post in parsed]
     comments = [[comment.get_text() for comment in post(attrs={'class': 'first'})] for post in parsed]
@@ -63,6 +60,10 @@ def get_posts(subreddit='', sort=''):
         posts[eval(rank[i])] = {'rank': eval(rank[i]), 'title':title[i], 'domain':domain[i], 
                             'link':link[i], 'post_id':post_id[i], 'score':score[i],
                             'comments':comments[i]}
+        try:
+            posts[eval(rank[i])]['flair'] = flair[i][0]
+        except:
+            posts[eval(rank[i])]['flair'] = ''
 
     return posts # a list of posts with title and links
 
@@ -143,7 +144,7 @@ class RedditCmd(cmd.Cmd):
         for rank in range(self.start, self.limit):
             try:
                 print self.posts[rank]['rank'],'|\t',  self.posts[rank]['score'], '::\t', self.posts[rank]['title'][:75] + '..', self.posts[rank]['domain']
-                print "\t\t", self.posts[rank]['comments'], '\n'
+                print "\t\t", self.posts[rank]['comments'], '\t\t\t', self.posts[rank]['flair'], '\n'
             except:
                 pass
 
