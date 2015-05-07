@@ -196,14 +196,14 @@ class HackerCmd(cmd.Cmd):
     def do_view(self, rank):
         rank = eval(rank)
         if (self.posts[rank]['link'][:3] == '/r/'):
-            webbrowser.open('https://www.reddit.com' + self.posts[rank]['link'])
+            webbrowser.open('https://www.reddit.com' + self.posts[rank]['link'], new=2, autoraise=True) # why is this NOT working.. ?
             return
         else:
             if ('imgur' in self.posts[rank]['link']):
                 if ('i.imgur' in self.posts[rank]['domain']):
                     response = requests.get(self.posts[rank]['link'])
                 else:
-                    response = requests.get('i.' + self.posts[rank]['link'])
+                    response = requests.get('http://i.' + self.posts[rank]['link'][7:] + ".jpg")
                 img = Image.open(StringIO(response.content))
                 img.show()
                 return
@@ -211,6 +211,13 @@ class HackerCmd(cmd.Cmd):
             return
 
         print '\nERROR: Please specify "feed" to view a post, feed <none> or feed <subreddit>'
+
+    def do_switch(self, not_used):
+        if self.subreddit:
+            url = "https://www.reddit.com/r/" + self.subreddit
+        else:
+            url = "https://www.reddit.com/"
+        webbrowser.open(url)
 
     def complete_feed(self, text, line, begidx, endidx):
         if not text:
