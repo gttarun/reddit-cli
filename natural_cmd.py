@@ -7,13 +7,7 @@ from StringIO import StringIO
 
 # NEED TO BE DONE
 
-# some pages have an extra post with no rank and others don't, sort accordingly
-# check {attr['class': 'domain']} for the redirect site (reddit, facebook, youtube, etc)
-# include number of upvotes
-# also need to probably  include a way to upvote as user, api call?
-# message system @user
-# different tabs in each subreddit (hot, new, rising, controversial, etc.)
-# clean up
+# i.https://imgur FIX THIS
 
 def get_posts(subreddit='', sort=''):
 
@@ -72,10 +66,18 @@ def get_posts(subreddit='', sort=''):
 
     return posts # a list of posts with title and links
 
-def get_hash(username):
-    r = requests.get('https://green-torus-502.appspot.com/_ah/api/redditapi/v0/user/' + username)
+def get_token():
+    with open('hash.txt', 'r') as hash_file:
+        hash_key = hash_file.readline()
+
+    r = requests.get('https://green-torus-802.appspot.com/_ah/api/redditapi/v0/hash/' + hash_key)
     jsonOut = json.loads(r.text)
-    return jsonOut['hash_key']
+    return jsonOut['access_token']
+
+def get_hash(username):
+    r = requests.get('https://green-torus-802.appspot.com/_ah/api/redditapi/v0/user/' + username)
+    jsonOut = json.loads(r.text)
+    return jsonOut
 
 def store_hash(hash_code):
     if hash_code:
@@ -98,9 +100,18 @@ class RedditCmd(cmd.Cmd):
         self.posts = {}
         self.subreddit = ''
         self.sort = ''
+        
+        # if os.path.isfile("hash.txt"):
+        #     self.token = get_token()
+        #     print self.token
+        # else:
+        #     jsonData = get_hash(username)
+        #     authorize_url = jsonData['url']
+        #     hash_key = jsonData['hash_key']
 
-        # hash_key = get_hash(self.user)
-        # store_hash(hash_key)
+        #     webbrowser.open(authorize_url)
+
+        #     store_hash(hash_key)
 
         print "Welcome", self.user
     
@@ -177,14 +188,14 @@ class RedditCmd(cmd.Cmd):
     def do_view(self, rank):
         rank = eval(rank)
         if (self.posts[rank]['link'][:3] == '/r/'):
-            webbrowser.open('https://www.reddit.com' + self.posts[rank]['link'])
+            webbrowser.open('https://www.reddit.com' + self.posts[rank]['link'], new=2, autoraise=True) # why is this NOT working.. ?
             return
         else:
             if ('imgur' in self.posts[rank]['link']):
                 if ('i.imgur' in self.posts[rank]['domain']):
                     response = requests.get(self.posts[rank]['link'])
                 else:
-                    response = requests.get('i.' + self.posts[rank]['link'])
+                    response = requests.get('http://i.' + self.posts[rank]['link'][7:] + ".jpg")
                 img = Image.open(StringIO(response.content))
                 img.show()
                 return
@@ -208,6 +219,13 @@ class RedditCmd(cmd.Cmd):
         rank = eval(rank)
         print self.posts[rank]['link']
         print self.posts[rank]['domain']
+
+    def do_switch(self, not_used):
+        if self.subreddit:
+            url = "https://www.reddit.com/r/" + self.subreddit
+        else:
+            url = "https://www.reddit.com/"
+        webbrowser.open(url)
 
     def do_help(self, t):
         print "\nxreddit help\n------------"
