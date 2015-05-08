@@ -57,9 +57,17 @@ def get_posts(subreddit='', sort=''):
     for i in range(len(rank)):
         if rank[i] == '':
             rank[i] = '0'
-        posts[eval(rank[i])] = {'rank': eval(rank[i]), 'title':title[i], 'domain':domain[i], 
-                            'link':link[i], 'post_id':post_id[i], 'score':score[i],
-                            'comments':comments[i]}
+        posts[eval(rank[i])] = {'rank': eval(rank[i]), 'title':title[i], 'domain':domain[i],
+                                'link': link[i], 'post_id': post_id[i]}
+
+        try:
+            posts[eval(rank[i])]['score'] = score[i]
+        except:
+            posts[eval(rank[i])]['score'] = ''
+        try:
+            posts[eval(rank[i])]['comments'] = comments[i]
+        except:
+            posts[eval(rank[i])]['comments'] = ''
         try:
             posts[eval(rank[i])]['flair'] = flair[i][0]
         except:
@@ -197,8 +205,11 @@ class RedditCmd(cmd.Cmd):
                     response = requests.get(self.posts[rank]['link'])
                 else:
                     response = requests.get('http://i.' + self.posts[rank]['link'][7:] + ".jpg")
-                img = Image.open(StringIO(response.content))
-                img.show()
+                try:
+                    img = Image.open(StringIO(response.content))
+                    img.show()
+                except:
+                    webbrowser.open(self.posts[rank]['link'])
                 return
             webbrowser.open(self.posts[rank]['link'])
             return
