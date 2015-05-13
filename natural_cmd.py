@@ -110,17 +110,18 @@ class RedditCmd(cmd.Cmd):
         self.subreddit = ''
         self.sort = ''
         
-        # if os.path.isfile("hash.txt"):
-        #     self.token = get_token()
-        #     print self.token
-        # else:
-        #     jsonData = get_hash(username)
-        #     authorize_url = jsonData['url']
-        #     hash_key = jsonData['hash_key']
+        # comment this save hash out for direct local testing
+        if os.path.isfile("hash.txt"):
+            self.token = get_token()
+            print self.token
+        else:
+            jsonData = get_hash(username)
+            authorize_url = jsonData['url']
+            hash_key = jsonData['hash_key']
 
-        #     webbrowser.open(authorize_url)
+            webbrowser.open(authorize_url)
 
-        #     store_hash(hash_key)
+            store_hash(hash_key)
 
         print "Welcome", self.user
     
@@ -152,6 +153,9 @@ class RedditCmd(cmd.Cmd):
         for rank in range(self.start, self.limit):
             try:
                 print self.posts[rank]['rank'],'|\t',  self.posts[rank]['score'], '::\t', self.posts[rank]['title'][:75] + '..', self.posts[rank]['domain']
+            except:
+            	pass
+            try:
                 print "\t\t", self.posts[rank]['comments'], '\t\t\t', self.posts[rank]['flair'], '\n'
             except:
                 pass
@@ -226,18 +230,22 @@ class RedditCmd(cmd.Cmd):
                             ]
         return completions
 
-    # for TESTING
-    def do_show(self, rank):
-        rank = eval(rank)
-        print self.posts[rank]['link']
-        print self.posts[rank]['domain']
-
     def do_switch(self, not_used):
         if self.subreddit:
             url = "https://www.reddit.com/r/" + self.subreddit
         else:
             url = "https://www.reddit.com/"
         webbrowser.open(url)
+
+    def do_info(self, not_used):
+    	print("REDDIT COMMAND LINE INTERFACE V0.0\n")
+    	if self.user:
+    		print "feed <none> <sort> or feed <subreddit> <sort> or feed <..> (return back to main reddit)"
+        	print "view <rank>"
+        	print "next (load next page of feed)"
+        	print "prev (load previous page of feed)"
+       	else:
+       		print "login <username>"
 
     def do_help(self, t):
         print "\nxreddit help\n------------"
